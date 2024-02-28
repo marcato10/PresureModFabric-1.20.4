@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.pressurerisk.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "ServerPlayerMixin",
+    "entity.PressureSkeletonBehavior"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}

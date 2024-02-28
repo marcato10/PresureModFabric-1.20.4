@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "level=0": {"model": "pressure-risk:block/totem_disabled_block"},
+    "level=1": {"model": "pressure-risk:block/totem_level_2_block"}
+  }
+}

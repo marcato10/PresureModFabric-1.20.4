@@ -1,0 +1,44 @@
+{
+	"schemaVersion": 1,
+	"id": "pressure-risk",
+	"version": "${version}",
+	"name": "Pressure Risk",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/pressure-risk/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.pressurerisk.PressureRisk"
+		],
+		"client": [
+			"com.pressurerisk.PressureRiskClient"
+		],
+		"fabric-datagen": [
+			"com.pressurerisk.PressureRiskDataGenerator"
+		]
+	},
+	"mixins": [
+		"pressure-risk.mixins.json",
+		{
+			"config": "pressure-risk.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.15.7",
+		"minecraft": "~1.20.4",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

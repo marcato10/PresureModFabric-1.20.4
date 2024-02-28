@@ -16,8 +16,10 @@ public class PlayerBonus {
         return this.playersScoreExtra.containsKey(uuid) ? this.playersScoreExtra.getInt(uuid) : 0;
     }
 
-    public void addScore(UUID uuid,int score){
-        this.playersScoreExtra.addTo(uuid, score);
+
+
+    public Object2IntOpenHashMap<UUID> getPlayersScoreExtra() {
+        return playersScoreExtra;
     }
 
     public void resetAllScores(){

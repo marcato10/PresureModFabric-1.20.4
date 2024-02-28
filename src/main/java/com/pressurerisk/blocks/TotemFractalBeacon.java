@@ -74,7 +74,6 @@ public class TotemFractalBeacon extends BlockWithEntity implements BlockEntityPr
             if(nightPressureManager.getTotemData().blockPos().isEmpty() && isPivotTotemValid(world,pos)){
                 world.setBlockState(pos,state.with(LEVEL_TOTEM,this.level+1));
                 nightPressureManager.setTotemData(new TotemData(this.level+1, Optional.of(pos)));
-                nightPressureManager.markDirty();
                 return ActionResult.SUCCESS;
             }
             return ActionResult.PASS;
@@ -87,10 +86,7 @@ public class TotemFractalBeacon extends BlockWithEntity implements BlockEntityPr
         if(!world.isClient()){
             NightPressureManager nightPressureManager = NightPressureManager.getServerWorldState((ServerWorld) world);
             if(nightPressureManager.getTotemData().blockPos().isPresent() && nightPressureManager.getTotemData().blockPos().get().equals(pos)){
-                nightPressureManager.setNightState(ModConstants.NIGHT_STATE.IDLE);
-                nightPressureManager.setTotemData(new TotemData(0,Optional.empty()));
-                nightPressureManager.getPlayerBonus().resetAllScores();
-                nightPressureManager.markDirty();
+                nightPressureManager.resetNight();
             }
         }
     }
@@ -107,7 +103,6 @@ public class TotemFractalBeacon extends BlockWithEntity implements BlockEntityPr
 
     private boolean isPivotTotemValid(World world, BlockPos pivotPos) {
         long number = checkAreaOutline(world,pivotPos);
-        System.out.println(number);
         return number == 24;
     }
 

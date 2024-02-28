@@ -4,7 +4,6 @@ import com.pressurerisk.core.NightPressureManager;
 import com.pressurerisk.utils.ModConstants;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.encryption.PublicPlayerSession;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.stat.ServerStatHandler;
@@ -29,8 +28,8 @@ public abstract class ServerPlayerMixin {
 	private void init(int experience,CallbackInfo info) {
 		NightPressureManager nightPressureManager = NightPressureManager.getServerWorldState(this.getServerWorld());
 		if(nightPressureManager.getNightState().equals(ModConstants.NIGHT_STATE.RUNNING)){
-			nightPressureManager.getPlayerBonus().addScore(this.getCameraEntity().getUuid(),experience);
-			nightPressureManager.markDirty();
+			nightPressureManager.addPlayerScore(this.getCameraEntity().getUuid(),experience);
+
 		}
 	}
 }

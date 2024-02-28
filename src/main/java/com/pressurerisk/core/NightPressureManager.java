@@ -5,10 +5,8 @@ import com.pressurerisk.core.data.TotemData;
 import com.pressurerisk.utils.ModConstants;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -51,8 +49,18 @@ public class NightPressureManager extends PersistentState {
         nightPressureManager.nightState = compound.getString("night_state").toUpperCase().equals(ModConstants.NIGHT_STATE.IDLE.toString()) ? ModConstants.NIGHT_STATE.IDLE : ModConstants.NIGHT_STATE.RUNNING;
         return nightPressureManager;
     }
-    
 
+    public void addPlayerScore(UUID uuid, int score){
+        this.getPlayerBonus().getPlayersScoreExtra().addTo(uuid, score);
+        this.markDirty();
+    }
+
+    public void resetNight(){
+        this.setNightState(ModConstants.NIGHT_STATE.IDLE);
+        this.setTotemData(new TotemData(0,Optional.empty()));
+        this.getPlayerBonus().resetAllScores();
+        this.markDirty();
+    }
 
     public ModConstants.NIGHT_STATE getNightState() {
         return nightState;
@@ -62,18 +70,16 @@ public class NightPressureManager extends PersistentState {
         return playerBonus;
     }
 
-    public void setPlayerBonus(PlayerBonus playerBonus) {
-        this.playerBonus = playerBonus;
-    }
-
     public TotemData getTotemData() {return totemData;}
 
     public void setTotemData(TotemData totemData) {
         this.totemData = totemData;
+        this.markDirty();
     }
 
     public void setNightState(ModConstants.NIGHT_STATE nightState) {
         this.nightState = nightState;
+        this.markDirty();
     }
 
     private static Type<NightPressureManager>type = new Type<>(
@@ -84,6 +90,8 @@ public class NightPressureManager extends PersistentState {
     public static NightPressureManager getServerWorldState(ServerWorld serverWorld){
         return serverWorld.getPersistentStateManager().getOrCreate(type,ModConstants.MOD_ID);
     }
+
+
 
     public static int getPressureLevel(ServerWorld serverWorld){
         return serverWorld.getPersistentStateManager().getOrCreate(type,ModConstants.MOD_ID).getTotemData().pressureLevel();

@@ -14,12 +14,16 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.World;
 
-public class ServerPressureNightCallback implements ServerPlayConnectionEvents.Join, ServerLivingEntityEvents.AfterDeath, ServerTickEvents.EndWorldTick, ServerEntityCombatEvents.AfterKilledOtherEntity{
+import static com.pressurerisk.network.ModServerNetwork.PRESSURE_XP;
+
+public class ServerPressureNightCallback implements ServerPlayConnectionEvents.Join, ServerLivingEntityEvents.AfterDeath, ServerTickEvents.EndTick, ServerEntityCombatEvents.AfterKilledOtherEntity{
     @Override
     public void onPlayReady(ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) {
         NightPressureManager nightPressureManager = NightPressureManager.getServerWorldState(handler.getPlayer().getServerWorld());
@@ -30,15 +34,28 @@ public class ServerPressureNightCallback implements ServerPlayConnectionEvents.J
     public void afterDeath(LivingEntity entity, DamageSource damageSource) {
         if(entity.isPlayer()){
             NightPressureManager nightPressureManager = NightPressureManager.getServerWorldState((ServerWorld) entity.getWorld());
-            nightPressureManager.getPlayerBonus().resetPlayerScore(entity.getUuid());
+            nightPressureManager.resetPlayerScore(entity.getUuid());
         }
     }
 
     @Override
-    public void onEndTick(ServerWorld world) {
+    public void afterKilledOtherEntity(ServerWorld world, Entity entity, LivingEntity killedEntity) {
         NightPressureManager nightPressureManager = NightPressureManager.getServerWorldState(world);
-        System.out.println(nightPressureManager.getNightState());
-        System.out.println(nightPressureManager.getTotemData().blockPos());
+        if(!nightPressureManager.getNightState().equals(ModConstants.NIGHT_STATE.RUNNING)){
+            return;
+        }
+        if(killedEntity.canTarget((LivingEntity) entity) && (((MobEntity)killedEntity).getVisibilityCache().canSee(entity))){
+            world.getServer().execute(()-> nightPressureManager.addPlayerScore(entity.getUuid(),killedEntity.getXpToDrop()));
+            PacketByteBuf packet = PacketByteBufs.create();
+            ServerPlayNetworking.send((ServerPlayerEntity) entity, PRESSURE_XP,packet.writeInt(nightPressureManager.getPlayerBonus().getPlayerScoreByUUID(entity.getUuid())));
+        }
+    }
+
+    @Override
+    public void onEndTick(MinecraftServer server) {
+        ServerWorld world = server.getOverworld();
+        NightPressureManager nightPressureManager = NightPressureManager.getServerWorldState(world);
+        System.out.println(nightPressureManager.getTotemData());
         if(nightPressureManager.getTotemData().blockPos().isPresent()){
             if(world.isNight() && nightPressureManager.getNightState().equals(ModConstants.NIGHT_STATE.IDLE)){
                 nightPressureManager.setNightState(ModConstants.NIGHT_STATE.RUNNING);
@@ -57,18 +74,6 @@ public class ServerPressureNightCallback implements ServerPlayConnectionEvents.J
                     }
                 });
             }
-        }
-    }
-    @Override
-    public void afterKilledOtherEntity(ServerWorld world, Entity entity, LivingEntity killedEntity) {
-        NightPressureManager nightPressureManager = NightPressureManager.getServerWorldState(world);
-        if(!nightPressureManager.getNightState().equals(ModConstants.NIGHT_STATE.RUNNING)){
-            return;
-        }
-        if(killedEntity.canTarget((LivingEntity) entity) && (((MobEntity)killedEntity).getVisibilityCache().canSee(entity))){
-            world.getServer().execute(()->{
-                nightPressureManager.addPlayerScore(entity.getUuid(),killedEntity.getXpToDrop());
-            });
         }
     }
 }

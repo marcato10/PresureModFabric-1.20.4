@@ -23,6 +23,12 @@ public class NightPressureManager extends PersistentState {
         this.nightState = ModConstants.NIGHT_STATE.IDLE;
     }
 
+    public NightPressureManager(TotemData totemData, PlayerBonus playerBonus, ModConstants.NIGHT_STATE nightState){
+        this.totemData = totemData;
+        this.playerBonus = playerBonus;
+        this.nightState = nightState;
+    }
+
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
         NbtCompound playerCompound = new NbtCompound();
@@ -37,17 +43,18 @@ public class NightPressureManager extends PersistentState {
     }
 
     public static NightPressureManager createFromNbt(NbtCompound compound){
-        NightPressureManager nightPressureManager = new NightPressureManager();
-        nightPressureManager.playerBonus = nightPressureManager.playerBonus.createFromNbt(compound.getCompound("players_data"));
         Optional<BlockPos>blockPos = Optional.empty();
 
         if(compound.contains("totem_pos")){
             int[] positions = compound.getIntArray("totem_pos");
             blockPos = Optional.of(new BlockPos(positions[0],positions[1],positions[2]));
         }
-        nightPressureManager.totemData = new TotemData(compound.getInt("pressure_level"),blockPos);
-        nightPressureManager.nightState = compound.getString("night_state").toUpperCase().equals(ModConstants.NIGHT_STATE.IDLE.toString()) ? ModConstants.NIGHT_STATE.IDLE : ModConstants.NIGHT_STATE.RUNNING;
-        return nightPressureManager;
+
+        return new NightPressureManager(
+                new TotemData(compound.getInt("pressure_level"),blockPos),
+                PlayerBonus.createFromNbt(compound.getCompound("players_data")),
+                compound.getString("night_state").toUpperCase().equals(ModConstants.NIGHT_STATE.IDLE.toString()) ? ModConstants.NIGHT_STATE.IDLE : ModConstants.NIGHT_STATE.RUNNING
+        );
     }
 
     public void addPlayerScore(UUID uuid, int score){
@@ -59,6 +66,11 @@ public class NightPressureManager extends PersistentState {
         this.setNightState(ModConstants.NIGHT_STATE.IDLE);
         this.setTotemData(new TotemData(0,Optional.empty()));
         this.getPlayerBonus().resetAllScores();
+        this.markDirty();
+    }
+
+    public void resetPlayerScore(UUID uuid){
+        this.getPlayerBonus().resetPlayerScore(uuid);
         this.markDirty();
     }
 
@@ -91,10 +103,8 @@ public class NightPressureManager extends PersistentState {
         return serverWorld.getPersistentStateManager().getOrCreate(type,ModConstants.MOD_ID);
     }
 
-
-
     public static int getPressureLevel(ServerWorld serverWorld){
-        return serverWorld.getPersistentStateManager().getOrCreate(type,ModConstants.MOD_ID).getTotemData().pressureLevel();
+        return getServerWorldState(serverWorld).getTotemData().pressureLevel();
     }
 
 }

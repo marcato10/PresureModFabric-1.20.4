@@ -14,7 +14,7 @@ public class ModEvents {
         PressureRisk.LOGGER.info("Registering Events "+ ModConstants.MOD_ID);
         ServerPlayConnectionEvents.JOIN.register(serverEvents);
         ServerLivingEntityEvents.AFTER_DEATH.register(serverEvents);
-        ServerTickEvents.END_WORLD_TICK.register(serverEvents);
+        ServerTickEvents.END_SERVER_TICK.register(serverEvents);
         ServerEntityCombatEvents.AFTER_KILLED_OTHER_ENTITY.register(serverEvents);
     }
 }

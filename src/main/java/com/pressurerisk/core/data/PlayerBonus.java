@@ -35,7 +35,7 @@ public class PlayerBonus {
         return nbt;
     }
 
-    public PlayerBonus createFromNbt(NbtCompound nbtCompound){
+    public static PlayerBonus createFromNbt(NbtCompound nbtCompound){
         PlayerBonus playerBonus = new PlayerBonus();
         nbtCompound.getKeys().forEach(key->{
             playerBonus.playersScoreExtra.put(UUID.fromString(key),nbtCompound.getInt(key));

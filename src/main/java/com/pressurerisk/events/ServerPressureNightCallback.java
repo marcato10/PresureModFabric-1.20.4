@@ -68,11 +68,7 @@ public class ServerPressureNightCallback implements ServerPlayConnectionEvents.J
             }
             if(world.isDay() && nightPressureManager.getNightState().equals(ModConstants.NIGHT_STATE.RUNNING)){
                 nightPressureManager.setNightState(ModConstants.NIGHT_STATE.IDLE);
-                world.getServer().execute(()->{
-                    for(ServerPlayerEntity serverPlayer : world.getPlayers()){
-                        ServerPlayNetworking.send(serverPlayer, ModServerNetwork.PRESSURE_EVENT_ALERT,PacketByteBufs.create().writeString("IDLE"));
-                    }
-                });
+                world.getServer().execute(()-> nightPressureManager.claimPlayersScore(server.getOverworld(),NightPressureManager.getPressureLevel(server.getOverworld())));
             }
         }
     }
